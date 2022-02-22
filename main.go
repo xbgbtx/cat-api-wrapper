@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	addr  = flag.String("addr", "localhost:6060", "TCP address to listen to")
+	addr  = flag.String("addr", "0.0.0.0:6060", "TCP address to listen to")
 	token = flag.String("token", "", "TheCatAPI token")
 )
 
