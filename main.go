@@ -6,6 +6,11 @@ import (
 	"fmt"
 	"github.com/valyala/fasthttp"
 	"log"
+
+  "crypto/tls"
+  "net"
+  "golang.org/x/crypto/acme"
+  "golang.org/x/crypto/acme/autocert"
 )
 
 var (
@@ -16,16 +21,29 @@ var (
 func main() {
 	log.Print("- Loading cat-api-wrapper")
 
-	maxBodySize := 100 * 1024 * 1024 // 100 MiB
-
-	s := &fasthttp.Server{
-		Handler:            requestHandler,
-		Name:               "cat-api-wrapper",
-		MaxRequestBodySize: maxBodySize,
+	m := &autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("139.162.221.134"), // Replace with your domain.
+		Cache:      autocert.DirCache("./certs"),
 	}
 
-	if err := s.ListenAndServe(*addr); err != nil {
-		log.Fatalf("- Error in ListenAndServe: %s", err)
+	cfg := &tls.Config{
+		GetCertificate: m.GetCertificate,
+		NextProtos: []string{
+			"http/1.1", acme.ALPNProto,
+		},
+	}
+
+	// Let's Encrypt tls-alpn-01 only works on port 443.
+	ln, err := net.Listen("tcp4", "0.0.0.0:443") /* #nosec G102 */
+	if err != nil {
+		panic(err)
+	}
+
+	lnTls := tls.NewListener(ln, cfg)
+
+	if err := fasthttp.Serve(lnTls, requestHandler); err != nil {
+		panic(err)
 	}
 }
 
