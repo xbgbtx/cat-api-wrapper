@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	addr  = flag.String("addr", "0.0.0.0:6060", "TCP address to listen to")
+	addr  = flag.String("addr", "localhost:6060", "TCP address to listen to")
 	token = flag.String("token", "", "TheCatAPI token")
 )
 
@@ -41,11 +41,7 @@ func requestHandler(ctx *fasthttp.RequestCtx) {
 }
 
 type CatApiObj struct {
-	Breeds []string `json:"breeds"`
-	ID     string   `json:"id"`
 	URL    string   `json:"url"`
-	Width  int64    `json:"width"`
-	Height int64    `json:"height"`
 }
 
 func requestCat(ctx *fasthttp.RequestCtx) CatApiObj {
